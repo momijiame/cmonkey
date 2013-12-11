@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import sys
 from setuptools import setup, find_packages
 
 
@@ -10,11 +11,15 @@ def _load_requires_from_file(filepath):
 
 def _install_requires():
     requires = _load_requires_from_file('requirements.txt')
+    if sys.version_info >= (2, 7, 0):
+        requires.remove('argparse')
     return requires
 
 
 def _test_requires():
     test_requires = _load_requires_from_file('test-requirements.txt')
+    if sys.version_info >= (3, 3, 0):
+        test_requires.remove('mock')
     return test_requires
 
 
