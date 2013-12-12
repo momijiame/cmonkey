@@ -20,7 +20,7 @@ class SignatureBuilder(object):
         self.secretkey = secretkey
 
     def build(self, params):
-        if 'apikey' in [k.lower() for k in params.keys()]:
+        if not 'apikey' in [k.lower() for k in params.keys()]:
             params['apikey'] = self.apikey
         # URL エンコードする
         quoted_params = dict([
