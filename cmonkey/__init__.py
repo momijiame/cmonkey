@@ -1,8 +1,9 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import argparse
 import os
+import sys
+import argparse
 
 
 def _parse_args():
@@ -27,7 +28,6 @@ def _parse_args():
         required=False, default=environ_apikey,
         help=option_a_help,
     )
-    # TODO: check
 
     option_s_help = 'Set SECRET key which can be taken from management WebUI'
     environ_secretkey = os.environ.get('CLOUDSTACK_API_SECRETKEY')
@@ -37,7 +37,6 @@ def _parse_args():
         required=False, default=environ_secretkey,
         help=option_s_help,
     )
-    # TODO: check
 
     option_x_help = 'Use XML format (default: False, IOW: Use JSON format)'
     arg_parser.add_argument(
@@ -47,25 +46,25 @@ def _parse_args():
         help=option_x_help,
     )
 
-    option_c_help = 'Show HTTP status code'
+    option_c_help = 'Hide HTTP status code'
     arg_parser.add_argument(
-        '-c', '--show-status-code',
+        '-c', '--hide-status-code',
         action='store_true',
         required=False, default=False,
         help=option_c_help,
     )
 
-    option_c_help = 'Show HTTP headers'
+    option_c_help = 'Hide HTTP headers'
     arg_parser.add_argument(
-        '-d', '--show-headers',
+        '-d', '--hide-headers',
         action='store_true',
         required=False, default=False,
         help=option_c_help,
     )
 
-    option_c_help = 'Show HTTP response body'
+    option_c_help = 'Hide HTTP response body'
     arg_parser.add_argument(
-        '-b', '--show-response-body',
+        '-b', '--hide-response-body',
         action='store_true',
         required=False, default=False,
         help=option_c_help,
@@ -79,6 +78,21 @@ def _parse_args():
     )
 
     args = arg_parser.parse_args()
+
+    if not args.api_key:
+        reason = 'error: the following arguments are required'
+        params = '-a/--api-key/os.environ["CLOUDSTACK_API_APIKEY"]'
+        msg = '%s: %s: %s' % (sys.argv[0], reason, params)
+        print(msg, file=sys.stderr)
+        sys.exit(2)
+
+    if not args.secret_key:
+        reason = 'error: the following arguments are required'
+        params = '-s/--secret-key/os.environ["CLOUDSTACK_API_SECRETKEY"]'
+        msg = '%s: %s: %s' % (sys.argv[0], reason, params)
+        print(msg, file=sys.stderr)
+        sys.exit(2)
+
     return args
 
 
