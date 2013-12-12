@@ -19,6 +19,12 @@ class Authenticator(object):
         pass
 
 
+class DummyAuthenticator(Authenticator):
+
+    def authenticate(self):
+        pass
+
+
 class SignatureBuilder(object):
 
     def __init__(self, apikey, secretkey):
