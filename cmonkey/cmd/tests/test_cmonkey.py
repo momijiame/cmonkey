@@ -21,7 +21,6 @@ class Test_Main(object):
         eq_(args.entry_point, 'http://localhost:8080/client/api')
         eq_(args.api_key, 'foo')
         eq_(args.secret_key, 'bar')
-        eq_(args.xml_format, False)
         eq_(args.hide_status_code, False)
         eq_(args.hide_headers, False)
         eq_(args.hide_response_body, False)

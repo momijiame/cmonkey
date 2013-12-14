@@ -40,14 +40,6 @@ def _parse_args():
         help=option_s_help,
     )
 
-    option_x_help = 'Use XML format (default: False, IOW: Use JSON format)'
-    arg_parser.add_argument(
-        '-x', '--xml-format',
-        action='store_true',
-        required=False, default=False,
-        help=option_x_help,
-    )
-
     option_c_help = 'Hide HTTP status code'
     arg_parser.add_argument(
         '-c', '--hide-status-code',
