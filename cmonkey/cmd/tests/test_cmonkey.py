@@ -4,14 +4,9 @@ import sys
 
 import nose
 from nose.tools.trivial import eq_
-
-from cmonkey.cmd.cmonkey import _parse_args
 from nose.tools.nontrivial import raises
 
-try:
-    import mock
-except ImportError:
-    from unittest import mock
+from cmonkey.cmd.cmonkey import _parse_args
 
 
 class Test_Main(object):
@@ -62,7 +57,7 @@ class Test_Main(object):
         sys.argv = [
             'cmonkey',
             '-s', 'bar',
-            'listUsers'
+            'listUsers',
         ]
         _parse_args()
 
@@ -71,7 +66,7 @@ class Test_Main(object):
         sys.argv = [
             'cmonkey',
             '-a', 'foo',
-            'listUsers'
+            'listUsers',
         ]
         _parse_args()
 
@@ -80,7 +75,7 @@ class Test_Main(object):
         sys.argv = [
             'cmonkey',
             '-t', 'foo',
-            'listUsers'
+            'listUsers',
         ]
         _parse_args()
 
@@ -90,7 +85,7 @@ class Test_Main(object):
             'cmonkey',
             '-t', 'cookie',
             '-p', 'bar',
-            'listUsers'
+            'listUsers',
         ]
         _parse_args()
 
@@ -100,7 +95,7 @@ class Test_Main(object):
             'cmonkey',
             '-t', 'cookie',
             '-u', 'foo',
-            'listUsers'
+            'listUsers',
         ]
         _parse_args()
 
