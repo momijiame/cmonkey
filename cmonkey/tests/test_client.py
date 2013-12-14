@@ -96,7 +96,6 @@ class Test_CookieClient(object):
         ]
         client.request.assert_has_calls(calls)
 
-
     def _md5(self, s):
         m = hashlib.md5()
         m.update(s.encode())
