@@ -25,6 +25,7 @@ class Test_Main(object):
         eq_(args.secret_key, 'bar')
         eq_(args.username, None)
         eq_(args.password, None)
+        eq_(args.digested_password, False)
         eq_(args.hide_status_code, False)
         eq_(args.hide_headers, False)
         eq_(args.hide_response_body, False)

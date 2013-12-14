@@ -66,6 +66,14 @@ def _parse_args():
         help=option_p_help,
     )
 
+    option_d_help = 'Use digested password (default: False)'
+    arg_parser.add_argument(
+        '-g', '--digested-password',
+        action='store_true',
+        required=False, default=False,
+        help=option_d_help,
+    )
+
     option_c_help = 'Hide HTTP status code'
     arg_parser.add_argument(
         '-c', '--hide-status-code',
