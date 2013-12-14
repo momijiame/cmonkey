@@ -9,6 +9,7 @@ import base64
 
 import six
 from six.moves.urllib import parse
+# from urllib import parse
 import requests
 
 
@@ -27,9 +28,15 @@ class ClientBase(AttributeInvokeMixin):
         self.endpoint = endpoint
         self.session = requests.Session()
 
-    @abstractmethod
     def invoke(self, command, params):
-        pass
+        params['response'] = 'json'
+        method, params, headers, data = self.produce(command, params)
+        response = self.request(method, params, headers, data)
+        return response.json()
+
+    @abstractmethod
+    def produce(self, command, params):
+        return (None, None, None, None)
 
     def request(self, method=None, params=None, headers=None, data=None):
         params = params or {}
@@ -46,16 +53,17 @@ class ClientBase(AttributeInvokeMixin):
 
 class CookieClient(ClientBase):
 
-    def __init__(self, endpoint, username, password):
+    def __init__(self, endpoint, username, password, digest=False):
         super(CookieClient, self).__init__(endpoint)
         self.username = username
         self.password = password
+        self.digest = digest
 
-    def invoke(self, command, params):
+    def produce(self, command, params):
         params['command'] = command
         session_key = self.login()
         params['sessionkey'] = session_key
-        return self.request(params=params)
+        return 'GET', params, None, None
 
     def login(self):
         params = {
@@ -64,10 +72,11 @@ class CookieClient(ClientBase):
         headers = {
             'Content-Type': 'application/x-www-form-urlencoded',
         }
+        password = self._md5(self.password) if self.digest else self.password
         data = {
             'command': 'login',
             'username': self.username,
-            'password': self._hexdigest(self.password),
+            'password': password,
             'domain': '/',
         }
         r = self.request('POST', params, headers, data)
@@ -75,7 +84,7 @@ class CookieClient(ClientBase):
         data = r_json['loginresponse']
         return data['sessionkey']
 
-    def _hexdigest(self, s):
+    def _md5(self, s):
         m = hashlib.md5()
         m.update(s.encode())
         return m.hexdigest()
@@ -124,9 +133,9 @@ class SignatureClient(ClientBase):
         self.secretkey = secretkey
         self.signature_builder = SignatureBuilder(apikey, secretkey)
 
-    def invoke(self, command, params):
+    def produce(self, command, params):
         params['command'] = command
         signature = self.signature_builder.build(params)
         params['apikey'] = self.apikey
         params['signature'] = signature
-        return self.request(params=params)
+        return 'GET', params, None, None
