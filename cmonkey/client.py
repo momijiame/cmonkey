@@ -9,7 +9,6 @@ import base64
 
 import six
 from six.moves.urllib import parse
-# from urllib import parse
 import requests
 
 
@@ -24,8 +23,8 @@ class AttributeInvokeMixin(object):
 @six.add_metaclass(ABCMeta)
 class ClientBase(AttributeInvokeMixin):
 
-    def __init__(self, endpoint):
-        self.endpoint = endpoint
+    def __init__(self, entry_point):
+        self.entry_point = entry_point
         self.session = requests.Session()
 
     def invoke(self, command, params):
@@ -44,7 +43,7 @@ class ClientBase(AttributeInvokeMixin):
         data = data or {}
         return self.session.request(
             method or 'GET',
-            self.endpoint,
+            self.entry_point,
             params=params,
             headers=headers,
             data=data,
@@ -53,8 +52,8 @@ class ClientBase(AttributeInvokeMixin):
 
 class CookieClient(ClientBase):
 
-    def __init__(self, endpoint, username, password, digest=False):
-        super(CookieClient, self).__init__(endpoint)
+    def __init__(self, entry_point, username, password, digest=False):
+        super(CookieClient, self).__init__(entry_point)
         self.username = username
         self.password = password
         self.digest = digest
@@ -127,8 +126,8 @@ class SignatureBuilder(object):
 
 class SignatureClient(ClientBase):
 
-    def __init__(self, endpoint, apikey, secretkey):
-        super(SignatureClient, self).__init__(endpoint)
+    def __init__(self, entry_point, apikey, secretkey):
+        super(SignatureClient, self).__init__(entry_point)
         self.apikey = apikey
         self.secretkey = secretkey
         self.signature_builder = SignatureBuilder(apikey, secretkey)
