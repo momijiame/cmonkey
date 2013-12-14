@@ -22,7 +22,15 @@ def _parse_args():
         help=option_e_help,
     )
 
-    option_a_help = 'Set API key which can be taken from management WebUI'
+    option_t_help = 'Set authentication type (default: signature)'
+    arg_parser.add_argument(
+        '-t', '--authentication-type',
+        type=str,
+        required=False, default='signature',
+        help=option_t_help,
+    )
+
+    option_a_help = 'Set API key (when using -t \'signature\')'
     environ_apikey = os.environ.get('CLOUDSTACK_API_APIKEY')
     arg_parser.add_argument(
         '-a', '--api-key',
@@ -31,13 +39,31 @@ def _parse_args():
         help=option_a_help,
     )
 
-    option_s_help = 'Set SECRET key which can be taken from management WebUI'
+    option_s_help = 'Set SECRET key (when using -t \'signature\')'
     environ_secretkey = os.environ.get('CLOUDSTACK_API_SECRETKEY')
     arg_parser.add_argument(
         '-s', '--secret-key',
         type=str,
         required=False, default=environ_secretkey,
         help=option_s_help,
+    )
+
+    option_u_help = 'Set username (when using -t \'cookie\')'
+    environ_username = os.environ.get('CLOUDSTACK_API_USERNAME')
+    arg_parser.add_argument(
+        '-u', '--username',
+        type=str,
+        required=False, default=environ_username,
+        help=option_u_help,
+    )
+
+    option_p_help = 'Set password (when using -t \'cookie\')'
+    environ_password = os.environ.get('CLOUDSTACK_API_PASSWORD')
+    arg_parser.add_argument(
+        '-p', '--password',
+        type=str,
+        required=False, default=environ_password,
+        help=option_p_help,
     )
 
     option_c_help = 'Hide HTTP status code'
@@ -72,26 +98,55 @@ def _parse_args():
     )
 
     args = arg_parser.parse_args()
-
-    if not args.api_key:
-        reason = 'error: the following arguments are required'
-        params = '-a/--api-key/os.environ["CLOUDSTACK_API_APIKEY"]'
-        msg = '%s: %s: %s' % (sys.argv[0], reason, params)
-        print(msg, file=sys.stderr)
-        sys.exit(2)
-
-    if not args.secret_key:
-        reason = 'error: the following arguments are required'
-        params = '-s/--secret-key/os.environ["CLOUDSTACK_API_SECRETKEY"]'
-        msg = '%s: %s: %s' % (sys.argv[0], reason, params)
-        print(msg, file=sys.stderr)
-        sys.exit(2)
+    _validate(args)
 
     return args
 
 
+def _validate(args):
+    # 認証タイプ別のバリデーション
+    auth_types = {
+        'signature': _validate_signature,
+        'cookie': _validate_cookie,
+    }
+    auth_validate_function = auth_types.get(args.authentication_type)
+    if not auth_validate_function:
+        _invalid('-t/--authentication-type')
+    auth_validate_function(args)
+
+
+def _validate_signature(args):
+    params = '-a/--api-key/os.environ["CLOUDSTACK_API_APIKEY"]'
+    _require(args.api_key, params)
+    params = '-s/--secret-key/os.environ["CLOUDSTACK_API_SECRETKEY"]'
+    _require(args.secret_key, params)
+
+
+def _validate_cookie(args):
+    params = '-u/--username/os.environ["CLOUDSTACK_API_USERNAME"]'
+    _require(args.username, params)
+    params = '-p/--password/os.environ["CLOUDSTACK_API_PASSWORD"]'
+    _require(args.password, params)
+
+
+def _require(argument, arg_params):
+    if not argument:
+        reason = 'error: the following argument is required'
+        msg = '%s: %s: %s' % (sys.argv[0], reason, arg_params)
+        raise ValueError(msg)
+
+
+def _invalid(arg_params):
+    reason = 'error: the following argument is invalid'
+    msg = '%s: %s: %s' % (sys.argv[0], reason, arg_params)
+    raise ValueError(msg)
+
+
 def main():
-    _parse_args()
+    try:
+        _parse_args()
+    except ValueError as e:
+        print(e, file=sys.stderr)
 
 
 if __name__ == '__main__':
