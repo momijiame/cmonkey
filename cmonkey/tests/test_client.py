@@ -52,15 +52,22 @@ class Test_CookieClient(object):
         params['command'] = 'listUsers'
         params['sessionkey'] = sessionkey
         calls = [
-            mock.call(params=params)
+            mock.call('GET', params, None, None)
         ]
         client.request.assert_has_calls(calls)
 
-    def test_login(self):
+    def test_login_digest(self):
+        self._test_login(digest=True)
+
+    def test_login_no_digest(self):
+        self._test_login(digest=False)
+
+    def _test_login(self, digest):
         endpoint = 'http://localhost:8080/client/api'
         username = 'admin'
         password = 'password'
-        client = CookieClient(endpoint, username, password)
+        client = CookieClient(endpoint, username, password, digest=digest)
+        # モックアウト
         response_mock = mock.Mock()
         response_mock.json = lambda: {
             'loginresponse': {
@@ -68,20 +75,20 @@ class Test_CookieClient(object):
             },
         }
         client.request = mock.MagicMock(return_value=response_mock)
+        # 実行
         client.login()
-        m = hashlib.md5()
-        m.update(password.encode())
-        return m.hexdigest()
+        # 検証
         params = {
             'response': 'json',
         }
         headers = {
             'Content-Type': 'application/x-www-form-urlencoded',
         }
+        password = self._md5(password) if digest else password
         data = {
             'command': 'login',
             'username': username,
-            'password': self._hexdigest(password),
+            'password': password,
             'domain': '/',
         }
         calls = [
@@ -89,7 +96,8 @@ class Test_CookieClient(object):
         ]
         client.request.assert_has_calls(calls)
 
-    def _hexdigest(self, s):
+
+    def _md5(self, s):
         m = hashlib.md5()
         m.update(s.encode())
         return m.hexdigest()
@@ -117,7 +125,7 @@ class Test_SignatureClient(object):
         params['apikey'] = self.APIKEY
         params['signature'] = self.SIGNATURE
         calls = [
-            mock.call(params=params)
+            mock.call('GET', params, None, None)
         ]
         client.request.assert_has_calls(calls)
 
