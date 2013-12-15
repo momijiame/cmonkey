@@ -42,6 +42,18 @@ if __name__ == '__main__':
         author='momijiame',
         author_email='amedama.ginmokusei@gmail.com',
         url='https://github.com/momijiame/cmonkey',
+        classifiers=[
+            'Programming Language :: Python :: 2',
+            'Programming Language :: Python :: 2.6',
+            'Programming Language :: Python :: 2.7',
+            'Programming Language :: Python :: 3',
+            'Programming Language :: Python :: 3.3',
+            'Development Status :: 3 - Alpha',
+            'License :: OSI Approved :: Apache Software License',
+            'Intended Audience :: Developers',
+            'Natural Language :: Japanese',
+            'Operating System :: POSIX'
+        ],
         packages=_packages(),
         install_requires=_install_requires(),
         tests_require=_test_requires(),
