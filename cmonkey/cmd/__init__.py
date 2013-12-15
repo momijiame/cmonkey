@@ -25,13 +25,15 @@ def _request(args):
     api_method = getattr(client, api_command)
     status_code, headers, content_body = api_method(*api_args)
     # レスポンスを表示する
+    response = {}
     if not args.hide_status_code:
-        print(status_code)
-    indent = 4 if args.pretty_print else None
+        response['status-code'] = status_code
     if not args.hide_headers:
-        print(json.dumps(headers, indent=indent))
+        response['headers'] = headers
     if not args.hide_content_body:
-        print(json.dumps(content_body, indent=indent))
+        response['content-body'] = content_body
+    indent = 4 if args.pretty_print else None
+    print(json.dumps(response, indent=indent))
 
 
 def _analyze_parameters(call_parameters):
