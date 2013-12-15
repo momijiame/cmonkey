@@ -16,6 +16,36 @@ from cmonkey.client import (
 
 
 def _request(args):
+    call_parameters = collections.deque(args.parameters)
+    api_command = call_parameters.popleft()
+    api_args = _analyze_parameters(call_parameters)
+    # クライアントを取得する
+    client = _get_client(args)
+    # API を実行する
+    api_method = getattr(client, api_command)
+    status_code, headers, content_body = api_method(*api_args)
+    # レスポンスを表示する
+    if not args.hide_status_code:
+        print(status_code)
+    indent = 4 if args.pretty_print else None
+    if not args.hide_headers:
+        print(json.dumps(headers, indent=indent))
+    if not args.hide_content_body:
+        print(json.dumps(content_body, indent=indent))
+
+
+def _analyze_parameters(call_parameters):
+    api_args = {}
+    for call_param in call_parameters:
+        pair = call_param.split('=')
+        if len(pair) != 2:
+            _invalid_parameter(pair[0])
+        key, value = pair
+        api_args[key] = value
+    return api_args
+
+
+def _get_client(args):
     clients = {
         'signature': (
             SignatureClient,
@@ -36,18 +66,7 @@ def _request(args):
         ),
     }
     client_cls, init_args = clients[args.authentication_type]
-    client = client_cls(*init_args)
-
-    call_parameters = collections.deque(args.parameters)
-    api_command = call_parameters.popleft()
-    # XXX: validation
-    api_args = [call_param.split('=') for call_param in call_parameters]
-
-    api_method = getattr(client, api_command)
-    response = api_method(*api_args)
-
-    indent = 4 if args.pretty_print else None
-    print(json.dumps(response, indent=indent))
+    return client_cls(*init_args)
 
 
 def _parse_args():
@@ -116,6 +135,30 @@ def _parse_args():
         help=option_d_help,
     )
 
+    option_c_help = 'Hide HTTP status code (default: False)'
+    arg_parser.add_argument(
+        '-c', '--hide-status-code',
+        action='store_true',
+        required=False, default=False,
+        help=option_c_help,
+    )
+
+    option_d_help = 'Hide HTTP headers (default: False)'
+    arg_parser.add_argument(
+        '-d', '--hide-headers',
+        action='store_true',
+        required=False, default=False,
+        help=option_d_help,
+    )
+
+    option_b_help = 'Hide HTTP content body (default: False)'
+    arg_parser.add_argument(
+        '-b', '--hide-content-body',
+        action='store_true',
+        required=False, default=False,
+        help=option_b_help,
+    )
+
     option_r_help = 'Pretty print'
     arg_parser.add_argument(
         '-i', '--pretty-print',
@@ -140,49 +183,57 @@ def _parse_args():
 def _validate(args):
     # 認証タイプ別のバリデーション
     auth_types = {
-        'signature': _validate_signature,
-        'cookie': _validate_cookie,
+        'signature': _validate_params_signature,
+        'cookie': _validate_params_cookie,
     }
     auth_validate_function = auth_types.get(args.authentication_type)
     if not auth_validate_function:
-        _invalid('-t/--authentication-type')
+        _invalid_argument('-t/--authentication-type')
     auth_validate_function(args)
 
 
-def _validate_signature(args):
+def _validate_params_signature(args):
     params = '-a/--api-key/os.environ["CLOUDSTACK_API_APIKEY"]'
-    _require(args.api_key, params)
+    _require_argument(args.api_key, params)
     params = '-s/--secret-key/os.environ["CLOUDSTACK_API_SECRETKEY"]'
-    _require(args.secret_key, params)
+    _require_argument(args.secret_key, params)
 
 
-def _validate_cookie(args):
+def _validate_params_cookie(args):
     params = '-u/--username/os.environ["CLOUDSTACK_API_USERNAME"]'
-    _require(args.username, params)
+    _require_argument(args.username, params)
     params = '-p/--password/os.environ["CLOUDSTACK_API_PASSWORD"]'
-    _require(args.password, params)
+    _require_argument(args.password, params)
 
 
-def _require(argument, arg_params):
+def _require_argument(argument, arg_params):
     if not argument:
         reason = 'error: the following argument is required'
         msg = '%s: %s: %s' % (sys.argv[0], reason, arg_params)
         raise ValueError(msg)
 
 
-def _invalid(arg_params):
+def _invalid_argument(arg_params):
     reason = 'error: the following argument is invalid'
-    msg = '%s: %s: %s' % (sys.argv[0], reason, arg_params)
+    _invalid(arg_params, reason)
+
+
+def _invalid_parameter(param_key):
+    reason = 'error: the following parameter is invalid'
+    _invalid(param_key, reason)
+
+
+def _invalid(entry, reason):
+    msg = '%s: %s: %s' % (sys.argv[0], reason, entry)
     raise ValueError(msg)
 
 
 def main():
     try:
         args = _parse_args()
-    except ValueError as e:
+        _request(args)
+    except BaseException as e:
         print(e, file=sys.stderr)
-
-    _request(args)
 
 if __name__ == '__main__':
     main()
