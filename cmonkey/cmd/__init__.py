@@ -9,7 +9,7 @@ import json
 import collections
 import argparse
 
-from cmonkey.client import (
+from cmonkey import (
     SignatureClient,
     CookieClient
 )
