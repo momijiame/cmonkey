@@ -21,7 +21,7 @@ Apache CloudStack には元々 cloudmonkey というコマンドラインツー�
 
 ```
 $ git clone https://github.com/momijiame/cmonkey.git
-$ cd pydevinit
+$ cd cmonkey
 $ python setup.py install
 ```
 
