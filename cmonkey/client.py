@@ -29,9 +29,14 @@ class ClientBase(AttributeInvokeMixin):
 
     def invoke(self, command, params):
         params['response'] = 'json'
+        # HTTP リクエスト
         method, params, headers, data = self.produce(command, params)
         response = self.request(method, params, headers, data)
-        return response.json()
+        # HTTP レスポンス
+        status_code = response.status_code
+        headers = dict(response.headers)
+        content_body = response.json()
+        return status_code, headers, content_body
 
     @abstractmethod
     def produce(self, command, params):

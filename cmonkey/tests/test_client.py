@@ -37,7 +37,11 @@ class Test_CookieClient(object):
         # モックアウト
         sessionkey = 'hogehoge'
         client.login = mock.MagicMock(return_value=sessionkey)
-        client.request = mock.Mock()
+        response = mock.Mock()
+        response.status_code = 200
+        response.headers = {}
+        response.json = lambda: {}
+        client.request = mock.Mock(return_value=response)
         # 実行
         params = {
             'account': 'admin',
@@ -112,7 +116,11 @@ class Test_SignatureClient(object):
         endpoint = 'http://localhost:8080/client/api'
         client = SignatureClient(endpoint, self.APIKEY, self.SECRETKEY)
         # モックアウト
-        client.request = mock.Mock()
+        response = mock.Mock()
+        response.status_code = 200
+        response.headers = {}
+        response.json = lambda: {}
+        client.request = mock.Mock(return_value=response)
         # 実行
         params = {
             'account': 'admin',

@@ -6,7 +6,7 @@ import nose
 from nose.tools.trivial import eq_
 from nose.tools.nontrivial import raises
 
-from cmonkey.cmd import _parse_args
+from cmonkey.cmd import _parse_args, _request
 
 
 class Test_Main(object):
@@ -26,6 +26,9 @@ class Test_Main(object):
         eq_(args.username, None)
         eq_(args.password, None)
         eq_(args.digested_password, False)
+        eq_(args.hide_status_code, False)
+        eq_(args.hide_headers, False)
+        eq_(args.hide_content_body, False)
         eq_(args.pretty_print, False)
         eq_(args.parameters, ['listUsers'])
 
@@ -45,6 +48,9 @@ class Test_Main(object):
         eq_(args.username, 'foo')
         eq_(args.password, 'bar')
         eq_(args.digested_password, False)
+        eq_(args.hide_status_code, False)
+        eq_(args.hide_headers, False)
+        eq_(args.hide_content_body, False)
         eq_(args.pretty_print, False)
         eq_(args.parameters, ['listUsers'])
 
@@ -94,6 +100,19 @@ class Test_Main(object):
             'listUsers',
         ]
         _parse_args()
+
+    @raises(ValueError)
+    def test_exec_error_invalid_param(self):
+        sys.argv = [
+            'cmonkey',
+            '-t', 'cookie',
+            '-u', 'foo',
+            '-p', 'bar',
+            'listUsers',
+            'a',
+        ]
+        args = _parse_args()
+        _request(args)
 
 
 if __name__ == "__main__":
