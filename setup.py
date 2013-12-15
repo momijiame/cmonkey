@@ -60,6 +60,6 @@ if __name__ == '__main__':
         test_suite='nose.collector',
         entry_points="""
         [console_scripts]
-        cmonkey = cmonkey:main
+        cmonkey = cmonkey.cmd:main
         """,
     )
