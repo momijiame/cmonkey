@@ -169,7 +169,7 @@ def _parse_args():
         help=option_r_help,
     )
 
-    parameters_help = 'key=value pairs (e.g. command=listHosts ...)'
+    parameters_help = 'command and key=value pairs (e.g. listUsers keyword=ad ...)'
     arg_parser.add_argument(
         'parameters',
         nargs='+',
