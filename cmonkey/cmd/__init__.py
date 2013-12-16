@@ -23,7 +23,7 @@ def _request(args):
     client = _get_client(args)
     # API を実行する
     api_method = getattr(client, api_command)
-    status_code, headers, content_body = api_method(*api_args)
+    status_code, headers, content_body = api_method(**api_args)
     # レスポンスを表示する
     response = {}
     if not args.hide_status_code:
@@ -169,7 +169,7 @@ def _parse_args():
         help=option_r_help,
     )
 
-    parameters_help = 'command and key=value pairs (e.g. listUsers keyword=ad ...)'
+    parameters_help = 'command and key=value pairs'
     arg_parser.add_argument(
         'parameters',
         nargs='+',
