@@ -7,6 +7,12 @@ from nose.tools.trivial import eq_
 from nose.tools.nontrivial import raises
 
 from cmonkey.cmd import _parse_args, _request
+from cmonkey import cmd
+
+try:
+    import mock
+except ImportError:
+    from unittest import mock
 
 
 class Test_Main(object):
@@ -114,6 +120,26 @@ class Test_Main(object):
         args = _parse_args()
         _request(args)
 
+    def test_exec_invoke(self):
+
+        def _listUsers(**kwargs):
+            eq_(kwargs, {'account': 'admin'})
+            return 200, {}, {}
+
+        sys.argv = [
+            'cmonkey',
+            '-a', 'foo',
+            '-s', 'bar',
+            'listUsers',
+            'account=admin',
+        ]
+        args = _parse_args()
+        with mock.patch('cmonkey.cmd._get_client') as m:
+            client_mock = mock.Mock()
+            client_mock.listUsers = _listUsers
+            m.return_value = client_mock
+
+            _request(args)
 
 if __name__ == "__main__":
     nose.main(argv=['nosetests', '-s', '-v'], defaultTest=__file__)
