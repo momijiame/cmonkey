@@ -11,7 +11,8 @@ import argparse
 
 from cmonkey import (
     SignatureClient,
-    CookieClient
+    CookieClient,
+    IntegrationClient
 )
 
 
@@ -64,6 +65,12 @@ def _get_client(args):
                 args.username,
                 args.password,
                 args.digested_password,
+            ],
+        ),
+        'integration': (
+            IntegrationClient,
+            [
+                args.entry_point,
             ],
         ),
     }
@@ -187,6 +194,7 @@ def _validate(args):
     auth_types = {
         'signature': _validate_params_signature,
         'cookie': _validate_params_cookie,
+        'integration': _validate_params_integration,
     }
     auth_validate_function = auth_types.get(args.authentication_type)
     if not auth_validate_function:
@@ -206,6 +214,10 @@ def _validate_params_cookie(args):
     _require_argument(args.username, params)
     params = '-p/--password/os.environ["CLOUDSTACK_API_PASSWORD"]'
     _require_argument(args.password, params)
+
+
+def _validate_params_integration(args):
+    pass
 
 
 def _require_argument(argument, arg_params):
@@ -235,7 +247,7 @@ def main():
         args = _parse_args()
         _request(args)
     except BaseException as e:
-        print(e, file=sys.stderr)
+        print('Error: %s' % e, file=sys.stderr)
 
 if __name__ == '__main__':
     main()
