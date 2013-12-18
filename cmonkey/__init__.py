@@ -55,7 +55,43 @@ class ClientBase(AttributeInvokeMixin):
         )
 
 
-class CookieClient(ClientBase):
+class LoginFailedException(BaseException):
+
+    def __init__(self, msg):
+        super(LoginFailedException, self).__init__(msg)
+
+
+class LoginMixin(object):
+
+    def login(self, username, password, digest=False):
+        params = {
+            'response': 'json',
+        }
+        headers = {
+            'Content-Type': 'application/x-www-form-urlencoded',
+        }
+        password = self._md5(password) if digest else password
+        data = {
+            'command': 'login',
+            'username': username,
+            'password': password,
+            'domain': '/',
+        }
+        r = self.request('POST', params, headers, data)
+        if r.status_code != 200:
+            msg = '\'%s\' can not login' % username
+            raise LoginFailedException(msg)
+        r_json = r.json()
+        data = r_json['loginresponse']
+        return data['sessionkey']
+
+    def _md5(self, s):
+        m = hashlib.md5()
+        m.update(s.encode())
+        return m.hexdigest()
+
+
+class CookieClient(ClientBase, LoginMixin):
 
     def __init__(self, entry_point, username, password, digest=False):
         super(CookieClient, self).__init__(entry_point)
@@ -65,33 +101,9 @@ class CookieClient(ClientBase):
 
     def produce(self, command, params):
         params['command'] = command
-        session_key = self.login()
+        session_key = self.login(self.username, self.password, self.digest)
         params['sessionkey'] = session_key
         return 'GET', params, None, None
-
-    def login(self):
-        params = {
-            'response': 'json',
-        }
-        headers = {
-            'Content-Type': 'application/x-www-form-urlencoded',
-        }
-        password = self._md5(self.password) if self.digest else self.password
-        data = {
-            'command': 'login',
-            'username': self.username,
-            'password': password,
-            'domain': '/',
-        }
-        r = self.request('POST', params, headers, data)
-        r_json = r.json()
-        data = r_json['loginresponse']
-        return data['sessionkey']
-
-    def _md5(self, s):
-        m = hashlib.md5()
-        m.update(s.encode())
-        return m.hexdigest()
 
 
 class SignatureBuilder(object):
