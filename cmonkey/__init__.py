@@ -155,3 +155,13 @@ class SignatureClient(ClientBase):
         params['apikey'] = self.apikey
         params['signature'] = signature
         return 'GET', params, None, None
+
+
+class IntegrationClient(ClientBase):
+
+    def __init__(self, entry_point):
+        super(IntegrationClient, self).__init__(entry_point)
+
+    def produce(self, command, params):
+        params['command'] = command
+        return 'GET', params, None, None
