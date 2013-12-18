@@ -8,7 +8,7 @@ from nose.tools.trivial import eq_
 from cmonkey import (
     CookieClient,
     SignatureClient,
-    SignatureBuilder
+    SignatureBuilder,
 )
 
 try:
@@ -68,7 +68,7 @@ class Test_CookieClient(object):
         client.listUsers(**params)
         # 検証
         calls = [
-            mock.call()
+            mock.call(username, password, False)
         ]
         client.login.assert_has_calls(calls)
         params['command'] = 'listUsers'
@@ -91,6 +91,7 @@ class Test_CookieClient(object):
         client = CookieClient(endpoint, username, password, digest=digest)
         # モックアウト
         response_mock = mock.Mock()
+        response_mock.status_code = 200
         response_mock.json = lambda: {
             'loginresponse': {
                 'sessionkey': 'hoge',
@@ -98,7 +99,7 @@ class Test_CookieClient(object):
         }
         client.request = mock.MagicMock(return_value=response_mock)
         # 実行
-        client.login()
+        client.login(username, password, digest)
         # 検証
         params = {
             'response': 'json',
