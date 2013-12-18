@@ -105,7 +105,7 @@ class SignatureBuilder(object):
             params['apikey'] = self.apikey
         # URL エンコードする
         quoted_params = dict([
-            (k, parse.quote(v))
+            (k, parse.quote(v, safe=''))
             for k, v in params.items()
         ])
         # lower case にする

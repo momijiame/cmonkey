@@ -31,6 +31,19 @@ class Test_SignatureBuilder(object):
         signature = builder.build(params)
         eq_(signature, b'QEq3xbEHhBmSfFw4RwVzkWyQYWc=')
 
+    def test_contains_slash(self):
+        params = {
+            'command': 'createZone',
+            'dns1': '203.0.113.1',
+            'internaldns1': '198.51.100.1',
+            'name': 'sample-zone',
+            'networktype': 'Advanced',
+            'guestcidraddress': '192.0.2.0/24',
+        }
+        builder = SignatureBuilder(self.APIKEY, self.SECRETKEY)
+        signature = builder.build(params)
+        eq_(signature, b'4+XLXpBJuqKH/BVg2WNYRcPFjTY=')
+
 
 class Test_CookieClient(object):
 
