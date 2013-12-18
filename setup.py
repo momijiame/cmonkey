@@ -37,7 +37,7 @@ def _packages():
 if __name__ == '__main__':
     setup(
         name='cmonkey',
-        version='0.0.2',
+        version='0.0.3',
         description='Simple scripting framework for Apache CloudStack',
         author='momijiame',
         author_email='amedama.ginmokusei@gmail.com',
