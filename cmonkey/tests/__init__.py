@@ -9,6 +9,7 @@ from cmonkey import (
     CookieClient,
     SignatureClient,
     SignatureBuilder,
+    IntegrationClient,
 )
 
 try:
@@ -123,6 +124,31 @@ class Test_CookieClient(object):
         m = hashlib.md5()
         m.update(s.encode())
         return m.hexdigest()
+
+
+class Test_IntegrationClient(object):
+
+    def test_request(self):
+        endpoint = 'http://localhost:8080/client/api'
+        client = IntegrationClient(endpoint)
+        # モックアウト
+        response = mock.Mock()
+        response.status_code = 200
+        response.headers = {}
+        response.json = lambda: {}
+        client.request = mock.Mock(return_value=response)
+        # 実行
+        params = {
+            'account': 'admin',
+            'response': 'json',
+        }
+        client.listUsers(**params)
+        # 検証
+        params['command'] = 'listUsers'
+        calls = [
+            mock.call('GET', params, None, None)
+        ]
+        client.request.assert_has_calls(calls)
 
 
 class Test_SignatureClient(object):
