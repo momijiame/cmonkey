@@ -3,16 +3,11 @@
 import sys
 
 import nose
-from nose.tools.trivial import eq_
+from nose.tools.trivial import eq_, ok_
 from nose.tools.nontrivial import raises
 
-from cmonkey.cmd import _parse_args, _request
-from cmonkey import cmd
-
-try:
-    import mock
-except ImportError:
-    from unittest import mock
+from cmonkey.cmd import _parse_args, _request, _get_client
+from cmonkey import SignatureClient, CookieClient, IntegrationClient
 
 
 class Test_Main(object):
@@ -120,26 +115,51 @@ class Test_Main(object):
         args = _parse_args()
         _request(args)
 
-    def test_exec_invoke(self):
-
-        def _listUsers(**kwargs):
-            eq_(kwargs, {'account': 'admin'})
-            return 200, {}, {}
-
+    def test_get_client_default(self):
         sys.argv = [
             'cmonkey',
             '-a', 'foo',
             '-s', 'bar',
             'listUsers',
-            'account=admin',
         ]
         args = _parse_args()
-        with mock.patch('cmonkey.cmd._get_client') as m:
-            client_mock = mock.Mock()
-            client_mock.listUsers = _listUsers
-            m.return_value = client_mock
+        client = _get_client(args)
+        ok_(isinstance(client, SignatureClient))
 
-            _request(args)
+    def test_get_client_signature(self):
+        sys.argv = [
+            'cmonkey',
+            '-t', 'signature',
+            '-a', 'foo',
+            '-s', 'bar',
+            'listUsers',
+        ]
+        args = _parse_args()
+        client = _get_client(args)
+        ok_(isinstance(client, SignatureClient))
+
+    def test_get_client_cookie(self):
+        sys.argv = [
+            'cmonkey',
+            '-t', 'cookie',
+            '-u', 'foo',
+            '-p', 'bar',
+            'listUsers',
+        ]
+        args = _parse_args()
+        client = _get_client(args)
+        ok_(isinstance(client, CookieClient))
+
+    def test_get_client_integration(self):
+        sys.argv = [
+            'cmonkey',
+            '-t', 'integration',
+            'listUsers',
+        ]
+        args = _parse_args()
+        client = _get_client(args)
+        ok_(isinstance(client, IntegrationClient))
+
 
 if __name__ == "__main__":
     nose.main(argv=['nosetests', '-s', '-v'], defaultTest=__file__)
