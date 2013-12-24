@@ -31,6 +31,17 @@ class ApiResponse(collections.namedtuple('ApiResponse',
     pass
 
 
+class ApiRequest(collections.namedtuple('ApiRequestParameters',
+                                            [
+                                                'method',
+                                                'params',
+                                                'headers',
+                                                'data',
+                                            ]
+                                        )):
+    pass
+
+
 @six.add_metaclass(ABCMeta)
 class ClientBase(AttributeInvokeMixin):
 
@@ -41,8 +52,8 @@ class ClientBase(AttributeInvokeMixin):
     def invoke(self, command, params):
         params['response'] = 'json'
         # HTTP リクエスト
-        method, params, headers, data = self.produce(command, params)
-        response = self.request(method, params, headers, data)
+        api_request = self.produce(command, params)
+        response = self.request(api_request)
         # HTTP レスポンス
         status_code = response.status_code
         headers = dict(response.headers)
@@ -51,14 +62,15 @@ class ClientBase(AttributeInvokeMixin):
 
     @abstractmethod
     def produce(self, command, params):
-        return (None, None, None, None)
+        return None
 
-    def request(self, method=None, params=None, headers=None, data=None):
-        params = params or {}
-        headers = headers or {}
-        data = data or {}
+    def request(self, api_request):
+        method = api_request.method or 'GET'
+        params = api_request.params or {}
+        headers = api_request.headers or {}
+        data = api_request.data or {}
         return self.session.request(
-            method or 'GET',
+            method,
             self.entry_point,
             params=params,
             headers=headers,
@@ -114,7 +126,7 @@ class CookieClient(ClientBase, LoginMixin):
         params['command'] = command
         session_key = self.login(self.username, self.password, self.digest)
         params['sessionkey'] = session_key
-        return 'GET', params, None, None
+        return ApiRequest('GET', params, None, None)
 
 
 class SignatureBuilder(object):
@@ -165,7 +177,7 @@ class SignatureClient(ClientBase):
         signature = self.signature_builder.build(params)
         params['apikey'] = self.apikey
         params['signature'] = signature
-        return 'GET', params, None, None
+        return ApiRequest('GET', params, None, None)
 
 
 class IntegrationClient(ClientBase):
@@ -175,4 +187,4 @@ class IntegrationClient(ClientBase):
 
     def produce(self, command, params):
         params['command'] = command
-        return 'GET', params, None, None
+        return ApiRequest('GET', params, None, None)

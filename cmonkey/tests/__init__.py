@@ -11,6 +11,7 @@ from cmonkey import (
     SignatureBuilder,
     IntegrationClient,
     ApiResponse,
+    ApiRequest
 )
 
 try:
@@ -76,7 +77,7 @@ class Test_CookieClient(object):
         params['command'] = 'listUsers'
         params['sessionkey'] = sessionkey
         calls = [
-            mock.call('GET', params, None, None)
+            mock.call(ApiRequest('GET', params, None, None))
         ]
         client.request.assert_has_calls(calls)
 
@@ -148,7 +149,7 @@ class Test_IntegrationClient(object):
         eq_(type(response), ApiResponse)
         params['command'] = 'listUsers'
         calls = [
-            mock.call('GET', params, None, None)
+            mock.call(ApiRequest('GET', params, None, None))
         ]
         client.request.assert_has_calls(calls)
 
@@ -179,7 +180,7 @@ class Test_SignatureClient(object):
         params['apikey'] = self.APIKEY
         params['signature'] = self.SIGNATURE
         calls = [
-            mock.call('GET', params, None, None)
+            mock.call(ApiRequest('GET', params, None, None))
         ]
         client.request.assert_has_calls(calls)
 
