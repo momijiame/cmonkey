@@ -24,17 +24,17 @@ def _request(args):
     client = _get_client(args)
     # API を実行する
     api_method = getattr(client, api_command)
-    status_code, headers, content_body = api_method(**api_args)
+    api_response = api_method(**api_args)
     # レスポンスを表示する
     response = {}
     if not args.hide_status_code:
-        response['status-code'] = status_code
+        response['status-code'] = api_response.status_code
     if not args.hide_headers:
-        response['headers'] = headers
+        response['headers'] = api_response.headers
     if not args.hide_content_body:
-        response['content-body'] = content_body
-    indent = 4 if args.pretty_print else None
-    print(json.dumps(response, indent=indent))
+        response['content-body'] = api_response.content_body
+
+    return response
 
 
 def _analyze_parameters(call_parameters):
@@ -245,7 +245,9 @@ def _invalid(entry, reason):
 def main():
     try:
         args = _parse_args()
-        _request(args)
+        response = _request(args)
+        indent = 4 if args.pretty_print else None
+        print(json.dumps(response, indent=indent))
     except BaseException as e:
         print('Error: %s' % e, file=sys.stderr)
 
