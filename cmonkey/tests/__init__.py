@@ -10,6 +10,7 @@ from cmonkey import (
     SignatureClient,
     SignatureBuilder,
     IntegrationClient,
+    ApiResponse,
 )
 
 try:
@@ -142,8 +143,9 @@ class Test_IntegrationClient(object):
             'account': 'admin',
             'response': 'json',
         }
-        client.listUsers(**params)
+        response = client.listUsers(**params)
         # 検証
+        eq_(type(response), ApiResponse)
         params['command'] = 'listUsers'
         calls = [
             mock.call('GET', params, None, None)

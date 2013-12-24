@@ -6,6 +6,7 @@ from abc import ABCMeta, abstractmethod
 import hmac
 import hashlib
 import base64
+import collections
 
 import six
 from six.moves.urllib import parse
@@ -18,6 +19,16 @@ class AttributeInvokeMixin(object):
         def handle(*args, **kwargs):
             return self.invoke(name, kwargs)
         return handle
+
+
+class ApiResponse(collections.namedtuple('ApiResponse',
+                                            [
+                                                'status_code',
+                                                'headers',
+                                                'content_body'
+                                            ]
+                                         )):
+    pass
 
 
 @six.add_metaclass(ABCMeta)
@@ -36,7 +47,7 @@ class ClientBase(AttributeInvokeMixin):
         status_code = response.status_code
         headers = dict(response.headers)
         content_body = response.json()
-        return status_code, headers, content_body
+        return ApiResponse(status_code, headers, content_body)
 
     @abstractmethod
     def produce(self, command, params):
