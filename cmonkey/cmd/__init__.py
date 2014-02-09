@@ -176,6 +176,14 @@ def _parse_args():
         help=option_r_help,
     )
 
+    option_n_help = 'No blocking asynchronous request'
+    arg_parser.add_argument(
+        '-n', '--no-block-asynchronous',
+        action='store_false',
+        required=False, default=True,
+        help=option_n_help,
+    )
+
     parameters_help = 'command and key=value pairs'
     arg_parser.add_argument(
         'parameters',

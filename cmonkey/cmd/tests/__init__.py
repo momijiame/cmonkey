@@ -31,6 +31,7 @@ class Test_Main(object):
         eq_(args.hide_headers, False)
         eq_(args.hide_content_body, False)
         eq_(args.pretty_print, False)
+        eq_(args.no_block_asynchronous, True)
         eq_(args.parameters, ['listUsers'])
 
     def test_parse_default_cookie(self):
