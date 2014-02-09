@@ -33,8 +33,6 @@ $ pip install cmonkey
 
 # 使い方
 
-cmonkey には二通りの使い方があります。
-
 ## コマンドラインツールとして使う
 
 インストールすると cmonkey コマンドが利用可能になります。
@@ -113,28 +111,33 @@ $ cmonkey \
   listUsers account=admin
 ```
 
-## Python ライブラリとして使う
+### Integration API (認証なし)
 
-インストールすることで cmonkey パッケージが利用できます。
-
-例として以下に Cookie 認証を用いてコマンドを実行する手順を示します。
+認証が不要な Integration API を使う方法です。
+Integration API を有効にするには WebUI の Global Settings から integration.api.port の項目を設定してください。
 
 ```
->>> import cmonkey
->>> endpoint = 'http://192.168.33.10:8080/client/api'
->>> username = 'admin'
->>> password = 'password'
->>> client = cmonkey.CookieClient(endpoint, username, password)
->>> status_code, headers, content_body = client.listUsers(account='admin')
->>> status_code
-200
->>> headers
-{'content-type': 'text/javascript;charset=UTF-8', 'server': 'Apache-Coyote/1.1', 'date': 'Sun, 15 Dec 2013 09:23:18 GMT', 'content-length': '591'}
->>> content_body
-{'listusersresponse': {'user': [{'accountid': '1ef4394e-646c-11e3-a767-080027c9399e', 'iscallerchilddomain': False, 'id': '1ef4aab4-646c-11e3-a767-080027c9399e', 'secretkey': 'XYkHJx6-QWtnSUQIwOizHJDUPAS2k6WuMicW28QqimkRK5xOMyopgWk7ib58dzCUOMsk1z-4hEyKUK7swlTpIQ', 'domainid': '0b0dbb58-646c-11e3-a767-080027c9399e', 'state': 'enabled', 'lastname': 'cloud', 'username': 'admin', 'firstname': 'admin', 'domain': 'ROOT', 'account': 'admin', 'apikey': '63-VTKvb5aFURMgPobNMhhCfb_BY25El90zmS84i2snQacUl1vxYdsXYMBIzfGy5oq3V20KXQ-NfLTYDFAUvGw', 'created': '2013-12-14T03:02:08+0000', 'accounttype': 1}], 'count': 1}}
+$ cmonkey \
+  --entry-point=http://<cloudstack-management-ip>:<integration-port>/client/api \
+  --authentication-type=integration \
+  listUsers account=admin
 ```
 
 ## その他
+
+### オプションの値について
+
+一部のオプションについては環境変数を使って指定することも可能です。
+
+|    オプション     |         環境変数          |
+|:-----------------:|:-------------------------:|
+| -e, --entry-point | CLOUDSTACK_API_ENTRYPOINT |
+| -a, --api-key     | CLOUDSTACK_API_APIKEY     |
+| -s, --secret-key  | CLOUDSTACK_API_SECRETKEY  |
+| -u, --username    | CLOUDSTACK_API_USERNAME   |
+| -p, --password    | CLOUDSTACK_API_PASSWORD   |
+
+### バージョン毎の差異
 
 Apache CloudStack 4.0 系と 4.1 系では Cookie 認証を用いる際にパスワードを送信する方法が異なるようです。
 4.0 系では MD5 でダイジェスト化したパスワードを送るのに対し、4.1 系ではそのまま送ります。
