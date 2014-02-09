@@ -56,6 +56,7 @@ def _get_client(args):
                 args.entry_point,
                 args.api_key,
                 args.secret_key,
+                args.no_block_asynchronous,
             ],
         ),
         'cookie': (
@@ -65,12 +66,14 @@ def _get_client(args):
                 args.username,
                 args.password,
                 args.digested_password,
+                args.no_block_asynchronous,
             ],
         ),
         'integration': (
             IntegrationClient,
             [
                 args.entry_point,
+                args.no_block_asynchronous,
             ],
         ),
     }

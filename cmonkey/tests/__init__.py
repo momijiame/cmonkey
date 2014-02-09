@@ -10,8 +10,6 @@ from cmonkey import (
     SignatureClient,
     SignatureBuilder,
     IntegrationClient,
-    ApiResponse,
-    ApiRequest
 )
 
 try:
@@ -54,7 +52,7 @@ class Test_CookieClient(object):
         endpoint = 'http://localhost:8080/client/api'
         username = 'admin'
         password = 'password'
-        client = CookieClient(endpoint, username, password)
+        client = CookieClient(endpoint, username, password, async_block=False)
         # モックアウト
         sessionkey = 'hogehoge'
         client.login = mock.MagicMock(return_value=sessionkey)
@@ -77,7 +75,7 @@ class Test_CookieClient(object):
         params['command'] = 'listUsers'
         params['sessionkey'] = sessionkey
         calls = [
-            mock.call(ApiRequest('GET', params, None, None))
+            mock.call('GET', params, None, None)
         ]
         client.request.assert_has_calls(calls)
 
@@ -132,7 +130,7 @@ class Test_IntegrationClient(object):
 
     def test_request(self):
         endpoint = 'http://localhost:8080/client/api'
-        client = IntegrationClient(endpoint)
+        client = IntegrationClient(endpoint, async_block=False)
         # モックアウト
         response = mock.Mock()
         response.status_code = 200
@@ -144,12 +142,61 @@ class Test_IntegrationClient(object):
             'account': 'admin',
             'response': 'json',
         }
-        response = client.listUsers(**params)
+        client.listUsers(**params)
         # 検証
-        eq_(type(response), ApiResponse)
         params['command'] = 'listUsers'
         calls = [
-            mock.call(ApiRequest('GET', params, None, None))
+            mock.call('GET', params, None, None)
+        ]
+        client.request.assert_has_calls(calls)
+
+    def test_async_block(self):
+        endpoint = 'http://localhost:8080/client/api'
+        client = IntegrationClient(endpoint, async_block=True)
+        # モックアウト
+        r1 = mock.Mock()
+        r1.status_code = 200
+        r1.headers = {}
+        r1.json = lambda: {
+            'addvpnuserresponse': {
+                'jobid': 1,
+            }
+        }
+        r2 = mock.Mock()
+        r2.status_code = 200
+        r2.headers = {}
+        r2.json = lambda: {
+            'queryasyncjobresultresponse': {
+                'jobstatus': 0,
+            }
+        }
+        r3 = mock.Mock()
+        r3.status_code = 200
+        r3.headers = {}
+        r3.json = lambda: {
+            'queryasyncjobresultresponse': {
+                'jobstatus': 1,
+            }
+        }
+        client.request = mock.Mock(side_effect=[r1, r2, r3])
+        # 実行
+        params = {
+            'username': 'foo',
+            'password': 'bar',
+            'response': 'json',
+        }
+        client.addVpnUser(**params)
+        # 検証
+        params['command'] = 'addVpnUser'
+        async_params = {
+            'command': 'queryAsyncJobResult',
+            'jobid': 1,
+            'response': 'json',
+        }
+        calls = [
+            mock.call('GET', params, None, None),
+            mock.call('GET', async_params, None, None),
+            mock.call('GET', async_params, None, None),
         ]
         client.request.assert_has_calls(calls)
 
@@ -162,7 +209,12 @@ class Test_SignatureClient(object):
 
     def test_request(self):
         endpoint = 'http://localhost:8080/client/api'
-        client = SignatureClient(endpoint, self.APIKEY, self.SECRETKEY)
+        client = SignatureClient(
+            endpoint,
+            self.APIKEY,
+            self.SECRETKEY,
+            async_block=False,
+        )
         # モックアウト
         response = mock.Mock()
         response.status_code = 200
@@ -180,7 +232,7 @@ class Test_SignatureClient(object):
         params['apikey'] = self.APIKEY
         params['signature'] = self.SIGNATURE
         calls = [
-            mock.call(ApiRequest('GET', params, None, None))
+            mock.call('GET', params, None, None)
         ]
         client.request.assert_has_calls(calls)
 
