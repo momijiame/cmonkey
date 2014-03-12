@@ -12,6 +12,7 @@ from abc import ABCMeta, abstractmethod
 
 import six
 from six.moves.urllib import parse
+from six.moves import range
 import requests
 
 LOG = logging.getLogger(__name__)
@@ -26,22 +27,22 @@ class AttributeInvokeMixin(object):
 
 
 class ApiResponse(collections.namedtuple('ApiResponse',
-                                            [
-                                                'status_code',
-                                                'headers',
-                                                'content_body'
-                                            ]
+                                         [
+                                             'status_code',
+                                             'headers',
+                                             'content_body'
+                                         ]
                                          )):
     pass
 
 
 class ApiRequest(collections.namedtuple('ApiRequest',
-                                            [
-                                                'method',
-                                                'params',
-                                                'headers',
-                                                'data',
-                                            ]
+                                        [
+                                            'method',
+                                            'params',
+                                            'headers',
+                                            'data',
+                                        ]
                                         )):
     pass
 
